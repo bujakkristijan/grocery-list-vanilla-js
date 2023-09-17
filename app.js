@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let allItems = JSON.parse(localStorage.getItem("items")) || [];
 
     // Function to create Edit button for a row
-    function createEditButton(item, row) {
+    function createEditButton(item, index, row) {
         const editButton = document.createElement("button");
         editButton.textContent = "Edit";
         editButton.classList.add("edit-button");
@@ -50,15 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         name: newName,
                         price: parseFloat(newPrice).toFixed(2),
                     };
-                    //stari nacin koji ne radi i brljavi
-                    // allItems[item.id - 1] = updatedItem;
-
-                    //novi nacin koji radi okej
-                    const itemIndex = allItems.findIndex((item) => item.id === updatedItem.id);
-                    //ako ne nadje nijedan, bice -1
-                    if (itemIndex !== -1) {
-                        allItems[itemIndex] = updatedItem;
-                    }
+                    allItems[index] = updatedItem;
 
                     updateGroceryList();
                     // Update localStorage
@@ -70,15 +62,15 @@ document.addEventListener("DOMContentLoaded", function () {
         return editButton;
     }
 
-    function createDeleteButton(item, row) {
+    function createDeleteButton(index, row) {
         // Add Delete button to the row
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "Delete";
         deleteButton.classList.add("delete-button");
 
         deleteButton.addEventListener("click", function () {
-            // Remove the item from the array based on its ID
-            allItems = allItems.filter((itemFromList) => itemFromList.id !== item.id);
+            // Remove the item from the array based on its index
+            allItems.splice(index, 1);
 
             // Update the UI
             updateGroceryList();
@@ -92,7 +84,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Function to update the grocery list in the UI
     function updateGroceryList() {
         groceryListTable.innerHTML = "";
-        allItems.forEach((item) => {
+        allItems.forEach((item, index) => {
             const row = document.createElement("tr");
             row.innerHTML = `
                 <td>${item.id}</td>
@@ -102,11 +94,11 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
 
             // Add Edit button to the row
-            const editButton = createEditButton(item, row);
+            const editButton = createEditButton(item, index, row);
             row.querySelector("td:last-child").appendChild(editButton);
 
             // Add Delete button to the row
-            const deleteButton = createDeleteButton(item, row);
+            const deleteButton = createDeleteButton(index, row);
             row.querySelector("td:last-child").appendChild(deleteButton);
 
             groceryListTable.appendChild(row);
@@ -115,9 +107,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Function to add a new item to the grocery list
     function addItemToList(item) {
-        // Find the maximum ID in existing items and use that value plus one
-        const maxId = Math.max(...allItems.map((item) => item.id), 0);
-        item.id = maxId + 1;
         allItems.push(item);
         localStorage.setItem("items", JSON.stringify(allItems));
         updateGroceryList();
@@ -131,7 +120,12 @@ document.addEventListener("DOMContentLoaded", function () {
         if (itemName === "" || isNaN(itemPrice) || itemPrice < 1) {
             alert("Error! Please insert valid values!");
         } else {
+            // Find the maximum ID in the existing items
+            const maxId = allItems.reduce((max, item) => (item.id > max ? item.id : max), 0);
+
+
             const newItem = {
+                id: maxId + 1, // Calculate the next available ID
                 name: itemName,
                 price: itemPrice.toFixed(2),
             };
