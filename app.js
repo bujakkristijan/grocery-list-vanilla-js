@@ -13,10 +13,6 @@ document.addEventListener("DOMContentLoaded", function () {
         editButton.textContent = "Edit";
         editButton.classList.add("edit-button");
 
-        // const deleteButton = document.createElement("button");
-        // deleteButton.textContent = "Delete";
-        // deleteButton.classList.add("delete-button");
-
         editButton.addEventListener("click", function () {
             // Replace Edit button with Save button
             const saveButton = document.createElement("button");
@@ -54,22 +50,14 @@ document.addEventListener("DOMContentLoaded", function () {
                         name: newName,
                         price: parseFloat(newPrice).toFixed(2),
                     };
-                    allItems[item.id - 1] = updatedItem;
+                    const itemIndex = allItems.findIndex((item) => item.id === updatedItem.id);
+                    if (itemIndex !== -1) {
+                        allItems[itemIndex] = updatedItem;
+                    }
 
                     updateGroceryList();
                     // Update localStorage
                     localStorage.setItem("items", JSON.stringify(allItems));
-
-                    // // Restore the row with updated values
-                    // row.innerHTML = `
-                    //     <td>${updatedItem.id}</td>
-                    //     <td>${updatedItem.name}</td>
-                    //     <td>${updatedItem.price}</td>
-                    //     <td><button class="edit-button">Edit</button></td>
-                    // `;
-
-                    // // Add event listener to the Edit button in the restored row
-                    // createEditButton(updatedItem, row);
                 }
             });
         });
@@ -77,29 +65,24 @@ document.addEventListener("DOMContentLoaded", function () {
         return editButton;
     }
 
-    function createDeleteButton(item, row){
-
-        //Add Delete button to the row
+    function createDeleteButton(item, row) {
+        // Add Delete button to the row
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "Delete";
         deleteButton.classList.add("delete-button");
 
-        deleteButton.addEventListener("click", function(){
-            allItems = allItems.filter((itemFromList) => itemFromList.id !== item.id );
-            // ovo zato sto pobrljavi id prilikom edita nakon brisanja
-            allItems.forEach((item, index) => (item.id = index + 1));
-            localStorage.setItem("items", JSON.stringify(allItems));
-            console.log(JSON.stringify(allItems)+ "allItems");
+        deleteButton.addEventListener("click", function () {
+            // Remove the item from the array based on its ID
+            allItems = allItems.filter((itemFromList) => itemFromList.id !== item.id);
+
+            // Update the UI
             updateGroceryList();
-        })
+            // Update localStorage
+            localStorage.setItem("items", JSON.stringify(allItems));
+        });
 
         return deleteButton;
     }
-
-    // function deleteItemFromList(){
-
-    // }
-
 
     // Function to update the grocery list in the UI
     function updateGroceryList() {
@@ -117,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const editButton = createEditButton(item, row);
             row.querySelector("td:last-child").appendChild(editButton);
 
-            //Add Delete button to the row
+            // Add Delete button to the row
             const deleteButton = createDeleteButton(item, row);
             row.querySelector("td:last-child").appendChild(deleteButton);
 
@@ -127,6 +110,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Function to add a new item to the grocery list
     function addItemToList(item) {
+        // Find the maximum ID in existing items and use that value plus one
+        const maxId = Math.max(...allItems.map((item) => item.id), 0);
+        item.id = maxId + 1;
         allItems.push(item);
         localStorage.setItem("items", JSON.stringify(allItems));
         updateGroceryList();
@@ -140,13 +126,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (itemName === "" || isNaN(itemPrice) || itemPrice < 1) {
             alert("Error! Please insert valid values!");
         } else {
-
-            // Find the last item in the list to determine the next ID
-            const lastItem = allItems[allItems.length - 1];
-            const nextId = lastItem ? lastItem.id + 1 : 1;
-
             const newItem = {
-                id: nextId,
                 name: itemName,
                 price: itemPrice.toFixed(2),
             };
