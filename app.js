@@ -50,7 +50,12 @@ document.addEventListener("DOMContentLoaded", function () {
                         name: newName,
                         price: parseFloat(newPrice).toFixed(2),
                     };
+                    //stari nacin koji ne radi i brljavi
+                    // allItems[item.id - 1] = updatedItem;
+
+                    //novi nacin koji radi okej
                     const itemIndex = allItems.findIndex((item) => item.id === updatedItem.id);
+                    //ako ne nadje nijedan, bice -1
                     if (itemIndex !== -1) {
                         allItems[itemIndex] = updatedItem;
                     }
